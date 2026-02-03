@@ -41,34 +41,3 @@ func JWTAuth() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-func RefreshToken(c *gin.Context) {
-	var req struct {
-		RefreshToken string `json:"refresh_token"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	token, err := jwt.ParseWithClaims(
-		req.RefreshToken,
-		&utils.Claims{},
-		func(t *jwt.Token) (interface{}, error) {
-			return utils.RefreshSecret, nil
-		},
-	)
-
-	if err != nil || !token.Valid {
-		c.JSON(401, gin.H{"error": "Refresh token không hợp lệ"})
-		return
-	}
-
-	claims := token.Claims.(*utils.Claims)
-	newAccess, _ := utils.GenerateAccessToken(claims.UserID, claims.Username)
-
-	c.JSON(200, gin.H{
-		"access_token": newAccess,
-	})
-}

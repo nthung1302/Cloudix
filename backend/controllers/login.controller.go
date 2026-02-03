@@ -21,10 +21,8 @@ func Login(c *gin.Context) {
 	userID := 1
 
 	accessToken, _ := utils.GenerateAccessToken(userID, req.Username)
-	refreshToken, _ := utils.GenerateRefreshToken(userID, req.Username)
 
 	c.JSON(http.StatusOK, gin.H{
 		"access_token":  accessToken,
-		"refresh_token": refreshToken,
 	})
 }

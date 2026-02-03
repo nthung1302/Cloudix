@@ -20,10 +20,6 @@ func GenerateAccessToken(id int, user string) (string, error) {
 	return generate(id, user, 15*time.Minute, AccessSecret)
 }
 
-func GenerateRefreshToken(id int, user string) (string, error) {
-	return generate(id, user, 7*24*time.Hour, RefreshSecret)
-}
-
 func generate(id int, user string, exp time.Duration, secret []byte) (string, error) {
 	claims := Claims{
 		UserID:   id,
