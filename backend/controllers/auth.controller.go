@@ -26,16 +26,16 @@ func Login(c *gin.Context) {
 		"access_token":  accessToken,
 	})
 
-	result, err := repositories.CreateUserByProc(req.Username, req.Password)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
+	// result, err := repositories.CreateUserByProc(req.Username, req.Password)
+	// if err != nil {
+	// 	c.JSON(500, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
-	if result.Result != 1 {
-		c.JSON(400, gin.H{"message": result.Message})
-		return
-	}
+	// if result.Result != 1 {
+	// 	c.JSON(400, gin.H{"message": result.Message})
+	// 	return
+	// }
 
-	c.JSON(200, gin.H{"message": result.Message})
+	// c.JSON(200, gin.H{"message": result.Message})
 }
