@@ -1,6 +1,7 @@
 package routes
+
 import (
-	
+	"backend/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,12 +13,12 @@ func MainRoutes(r *gin.Engine) {
 			AuthRoutes(auth)
 		}
 
-		/*
-		user := api.Group("/users")
+		
+		account := api.Group("/users", middlewares.JWTAuth())
 		{
-			UserRoutes(middlewares.JWTAuth, user)
+			AccountRoutes(account)
 		}
-
+/*
 		product := api.Group("/products")
 		{
 			ProductRoutes(middlewares.JWTAuth, product)
