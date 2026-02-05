@@ -1,39 +1,36 @@
 package utils
 
 import (
-	"log"
-	"os"
-	"time"
-
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func DebugLogErr(c *gin.Context, status int, error_code int, message error) {
-	if os.Getenv("DEBUG") == "true" {
-		c.JSON(status, gin.H{
-			"status":  status,
-			"error":   error_code,
-			"message": message,
-			"debug":   message.Error(),
-		})
-		return
+func Response(c *gin.Context, status int, code int, message string, data any) {
+	resp := gin.H{
+		"status":  code,
+		"message": message,
+		"data":    data,
 	}
 
-	c.JSON(status, gin.H{
-		"status":  status,
-		"error":   error_code,
-		"message": message,
-	})
+	c.JSON(status, resp)
 }
 
-func DebugLog(c *gin.Context, status int, error_code int, message string) {
-	c.JSON(status, gin.H{
-		"status":  status,
-		"error":   error_code,
-		"message": message,
-	})
-}
+var Logger = logrus.New()
 
-func DebugTerminal(c *gin.Context, title, message string) {
-	log.Printf("%s: %s", title, message+" | "+time.Now().Format(time.RFC3339))
+func InitLogger() {
+	Logger.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
+
+	Logger.SetLevel(logrus.ErrorLevel)
+
+	Logger.SetOutput(&lumberjack.Logger{
+		Filename:   "logs/error.log",
+		MaxSize:    50,
+		MaxBackups: 30,
+		MaxAge:     30,
+		Compress:   true,
+		LocalTime:  true,
+	})
 }

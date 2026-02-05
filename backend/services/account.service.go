@@ -1,23 +1,21 @@
 package services
 
 import (
+	"backend/models"
 	"backend/repositories"
-	"backend/utils"
-	"errors"
 )
 
-func ChangePassword(UID, NewPassword string) error {
+// Thay đổi mật khẩu
+func ChangePassword(UID, NewPassword string) (*models.ChangePasswordResult, error) {
+	return repositories.ChangePassword(UID, NewPassword)
+}
 
-	PasswordHash, err := utils.HashPassword(NewPassword)
-	if err != nil {
-		return err
-	}
-	result, err := repositories.ChangePassword(UID, PasswordHash)
-	if err != nil {
-		return err
-	}
-	if result.Error == 0 {
-		return errors.New(result.Message)
-	}
-	return nil
+// Lấy thông tin tài khoản
+func GetAccountInfo(uid string) (map[string]interface{}, error) {
+	return repositories.GetAccountInfo(uid)
+}
+
+// Lấy quyền tài khoản
+func GetAccountPermissions(uid string) ([]models.PermissionRow, error) {
+	return repositories.GetAccountPermissions(uid)
 }

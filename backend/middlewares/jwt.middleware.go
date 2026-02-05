@@ -13,10 +13,7 @@ func JWTAuth() gin.HandlerFunc {
 		// 1. Lấy token từ header
 		auth := c.GetHeader("Authorization")
 		if auth == "" {
-			c.AbortWithStatusJSON(401, gin.H{
-				"error":   -1,
-				"message": "Thiếu token",
-			})
+			utils.Logger.Error("Không tìm thấy token trong header.")
 			return
 		}
 
@@ -32,10 +29,7 @@ func JWTAuth() gin.HandlerFunc {
 		)
 
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(401, gin.H{
-				"error":   -2,
-				"message": "Token không hợp lệ hoặc hết hạn",
-			})
+			utils.Logger.Error("Token không hợp lệ: ", err)
 			return
 		}
 
@@ -43,7 +37,6 @@ func JWTAuth() gin.HandlerFunc {
 		claims := token.Claims.(*utils.Claims)
 		c.Set("UID", claims.UID)
 		c.Set("UserName", claims.UserName)
-
 		c.Next()
 	}
 }

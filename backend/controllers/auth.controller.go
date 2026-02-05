@@ -8,63 +8,70 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-Đăng ký tài khoản mới
-@Sumary đăng ký tài khoản mới
-@Description Đăng ký tài khoản mới với username, password, full_name và email
-@Tags Authentication
-@Accept json
-@Produce json
-@Param dữ liệu body body object{ username=string, password=string, full_name=string, email=string} true "Dữ liệu đăng ký"
-@Success 200 {object} object{message=string} đang ký thành công
-@Failure 400 {object} object{message=string} lỗi đăng ký
-@Router /api/authentication/register [post]
-*/
+// Register handles the registration request.
 func Register(c *gin.Context) {
 	var req models.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.DebugLog(c, 400, -1, "Data not valid.", err)
+		utils.Logger.Error("Lỗi khi nhận dữ liệu đăng ký: ", err)
+		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
 		return
 	}
 
-	if err := services.Register(
-		req.UserName,
-		req.Password,
-		req.FullName,
-		req.Email,
-	); err != nil {
-		utils.DebugLogRes(c, 400, -2, err)
+	result, err := services.Register(req.UserName, req.Password, req.FullName, req.Email)
+	if err != nil {
+		utils.Response(c, 400, 0, err.Error(), nil)
 		return
 	}
 
-	utils.DebugLogRes(c, 200, 0, "Registration successful.", nil)
-}	
+	utils.Response(c, 200, 1, result.Message, nil)
+}
 
-/*
-Đăng nhập tài khoản
-@Sumary Đăng nhập tài khoản
-@Description Đăng nhập tài khoản với username và password
-@Tags Authentication
-@Accept json
-@Produce json
-@Param dữ liệu body body object{ username=string, password=string} true "Dữ liệu đăng nhập"
-@Success 200 {object} object{access_token=string} đăng nhập thành công
-@Failure 400 {object} object{message=string} lỗi đăng nhập
-@Router /api/authentication/login [post]
-*/
+// Login handles the login request.
 func Login(c *gin.Context) {
 	var req models.LoginRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.DebugLogRes(c, 400, -1, err)
+		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
 		return
 	}
 
-	token, err := services.Login(req.UserName, req.Password)
+	user, err := services.Login(req.UserName, req.Password)
 	if err != nil {
-		utils.DebugLogRes(c, 400, -2, err)
+		utils.Logger.Error(err)
+		utils.Response(c, 400, 0, err.Error(), nil)
 		return
 	}
-	c.JSON(200, gin.H{"access_token": token})
+
+	token, err := utils.GenerateAccessToken(
+		user.UID.String,
+		user.UserName.String,
+	)
+	if err != nil {
+		utils.Logger.Error(err)
+		utils.Response(c, 500, -99, "Lỗi hệ thống.", nil)
+		return
+	}
+
+	utils.Response(c, 200, 0, "Đăng nhập thành công.", gin.H{
+		"access_token": token,
+	})
+}
+
+// ForgotPassword handles the forgot password request.
+func ForgotPassword(c *gin.Context) {
+	var req models.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.Logger.Error("Lỗi khi nhận dữ liệu quên mật khẩu: ", err)
+		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
+		return
+	}
+
+	result, err := services.ForgotPassword(req.UserName, req.NewPassword)
+	if err != nil {
+		utils.Logger.Error("Lỗi khi xử lý quên mật khẩu: ", err)
+		utils.Response(c, 400, 0, err.Error(), nil)
+		return
+	}
+
+	utils.Response(c, 200, 1, result.Message, nil)
 }

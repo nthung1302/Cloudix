@@ -1,0 +1,32 @@
+{"level":"error","msg":"Lỗi khi đăng nhập: Sai mật khẩu.","time":"2026-02-05 20:10:14"}
+{"level":"error","msg":"Lỗi hệ thống khi đăng nhập: Tài khoản không tồn tại.","time":"2026-02-05 22:19:56"}
+{"level":"error","msg":"Lỗi khi đăng nhập: Tài khoản không tồn tại.","time":"2026-02-05 22:19:56"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:17:11"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:17:11"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:20:47"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:20:47"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:26:49"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:26:49"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:26:52"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:26:52"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:26:54"}
+{"level":"error","msg":"sql: expected 6 destination arguments in Scan, not 4","time":"2026-02-05 23:26:54"}
+{"level":"error","msg":"Lỗi khi đăng nhập: Sai mật khẩu.","time":"2026-02-05 23:37:46"}
+{"level":"error","msg":"mssql: Invalid object name 'PermissionGroup'.","time":"2026-02-05 23:38:02"}
+{"level":"error","msg":"Sai mật khẩu.","time":"2026-02-06 00:14:37"}
+{"level":"error","msg":"Lỗi hệ thống khi đăng nhập: Tài khoản không tồn tại.","time":"2026-02-06 00:14:48"}
+{"level":"error","msg":"Tài khoản không tồn tại.","time":"2026-02-06 00:14:48"}
+{"level":"error","msg":"Lỗi khi scan dữ liệu đăng nhập: mssql: Invalid object name 'Profiles'.","time":"2026-02-06 00:15:04"}
+{"level":"error","msg":"mssql: Invalid object name 'Profiles'.","time":"2026-02-06 00:15:04"}
+{"level":"error","msg":"Lỗi khi scan dữ liệu đăng nhập: mssql: Invalid object name 'Profiles'.","time":"2026-02-06 00:17:15"}
+{"level":"error","msg":"Lỗi hệ thống","time":"2026-02-06 00:17:15"}
+{"level":"error","msg":"Lỗi khi scan dữ liệu đăng ký: mssql: Invalid object name 'Profiles'.","time":"2026-02-06 00:28:49"}
+{"level":"error","msg":"Lỗi khi scan dữ liệu đăng ký: mssql: Invalid object name 'Profiles'.","time":"2026-02-06 00:29:32"}
+{"level":"error","msg":"Không tìm thấy UID trong context.","time":"2026-02-06 00:55:16"}
+{"level":"error","msg":"Không tìm thấy UID trong context.","time":"2026-02-06 00:58:47"}
+{"level":"error","msg":"Token không hợp lệ: token signature is invalid: signature is invalid","time":"2026-02-06 00:59:52"}
+{"level":"error","msg":"Không tìm thấy UID trong context.","time":"2026-02-06 00:59:52"}
+{"level":"error","msg":"Token không hợp lệ: token signature is invalid: signature is invalid","time":"2026-02-06 01:00:49"}
+{"level":"error","msg":"Không tìm thấy UID trong context.","time":"2026-02-06 01:00:49"}
+{"level":"error","msg":"Token không hợp lệ: token signature is invalid: signature is invalid","time":"2026-02-06 01:19:32"}
+{"level":"error","msg":"Không tìm thấy UID trong context.","time":"2026-02-06 01:19:32"}

@@ -7,29 +7,23 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
-
-    DECLARE @error INT;
-    DECLARE @message NVARCHAR(255);
     
+    -- Results: Status, Message
     BEGIN TRY
         BEGIN TRANSACTION;
 
         -- Kiểm tra trùng username và email
         IF EXISTS (SELECT 1 FROM Accounts WHERE UserName = @UserName)
         BEGIN
-            SET @error = -1;
-            SET @message = 'Username already exists.';
             ROLLBACK TRANSACTION;
-            SELECT @error AS Error, @message AS Message;
+            SELECT 0 AS Status, N'Tên đăng nhập đã tồn tại.' AS Message;
             RETURN;
         END
 
         IF EXISTS (SELECT 1 FROM Profiles WHERE Email = @Email)
         BEGIN
-            SET @error = -2;
-            SET @message = 'Email already exists.';
             ROLLBACK TRANSACTION;
-            SELECT @error AS Error, @message AS Message;
+            SELECT 0 AS Status, N'Email đã tồn tại.' AS Message;
             RETURN;
         END
 
@@ -62,17 +56,11 @@ BEGIN
         WHERE r.IsDefault = 1;
 
         COMMIT TRANSACTION;
-        SET @error = 0;
-        SET @message = 'Account created successfully.';
-        SELECT @error AS Error, @message AS Message;
+        SELECT 1 AS Status, N'Tài khoản đã được tạo thành công.' AS Message;
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-        SET @error = -99;
-        SET @message = ERROR_MESSAGE();
-        SELECT @error AS Error, @message AS Message;
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SELECT -1 AS Status, ERROR_MESSAGE() AS Message;
     END CATCH
 END
 -- EXEC SP_CREATE_ACCOUNT @UserName='admin', @Password='admin@123', @FullName='Nguyễn Minh Hùng', @Email='admin@example.com'
--- SELECT * FROM Accounts

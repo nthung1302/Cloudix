@@ -12,10 +12,20 @@ GO
 -- =====================================
 -- TABLE Permissions
 -- =====================================
+CREATE TABLE PermissionGroup (
+    PermissionGroupID INT IDENTITY(1,1) PRIMARY KEY,
+    PermissionGroupName NVARCHAR(100) NOT NULL UNIQUE,
+    Description NVARCHAR(255)
+);
+
 CREATE TABLE Permissions (
     PermissionID INT IDENTITY(1,1) PRIMARY KEY,
     PermissionName NVARCHAR(100) NOT NULL UNIQUE,
-    Description NVARCHAR(255)
+    Description NVARCHAR(255),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME DEFAULT GETDATE(),
+    PermissionGroupID INT,
+    CONSTRAINT FK_Permissions_PermissionGroupID FOREIGN KEY (PermissionGroupID) REFERENCES PermissionGroup(PermissionGroupID) ON DELETE SET NULL
 );
 CREATE INDEX IDX_Permissions_PermissionName ON Permissions(PermissionName);
 
@@ -50,8 +60,8 @@ CREATE TABLE RolePermissions (
     RoleID INT NOT NULL,
     PermissionID INT NOT NULL,
     PRIMARY KEY (RoleID, PermissionID),
-    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID) ON DELETE CASCADE,
-    FOREIGN KEY (PermissionID) REFERENCES Permissions(PermissionID) ON DELETE CASCADE
+    CONSTRAINT FK_RolePermissions_RoleID FOREIGN KEY (RoleID) REFERENCES Roles(RoleID) ON DELETE CASCADE,
+    CONSTRAINT FK_RolePermissions_PermissionID FOREIGN KEY (PermissionID) REFERENCES Permissions(PermissionID) ON DELETE CASCADE
 );
 
 CREATE INDEX IDX_RolePermissions_RoleID ON RolePermissions(RoleID);
@@ -60,9 +70,9 @@ CREATE INDEX IDX_RolePermissions_PermissionID ON RolePermissions(PermissionID);
 CREATE TABLE AccountPermissions (
     AccountID INT NOT NULL,
     PermissionID INT NOT NULL,
-    PRIMARY KEY (AccountID, PermissionID),
-    FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
-    FOREIGN KEY (PermissionID) REFERENCES Permissions(PermissionID) ON DELETE CASCADE
+    CONSTRAINT PK_AccountPermissions PRIMARY KEY (AccountID, PermissionID),
+    CONSTRAINT FK_AccountPermissions_AccountID FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
+    CONSTRAINT FK_AccountPermissions_PermissionID FOREIGN KEY (PermissionID) REFERENCES Permissions(PermissionID) ON DELETE CASCADE
 );
 CREATE INDEX IDX_AccountPermissions_AccountID ON AccountPermissions(AccountID);
 CREATE INDEX IDX_AccountPermissions_PermissionID ON AccountPermissions(PermissionID);
@@ -73,22 +83,22 @@ CREATE TABLE AccountRoles (
     AccountID INT NOT NULL,
     RoleID INT NOT NULL,
     PRIMARY KEY (AccountID, RoleID),
-    FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
-    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID) ON DELETE CASCADE
+    CONSTRAINT FK_AccountRoles_AccountID FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
+    CONSTRAINT FK_AccountRoles_RoleID FOREIGN KEY (RoleID) REFERENCES Roles(RoleID) ON DELETE CASCADE
 );
 
 -- =====================================
 -- TABLE Profiles
 -- =====================================
-CREATE TABLE Profiles (
+CREATE TABLE AccountProfiles (
     AccountID INT PRIMARY KEY,
     FullName NVARCHAR(100),
     Email NVARCHAR(100) UNIQUE,
     PhoneNumber NVARCHAR(15),
     Address NVARCHAR(255),
-    FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
     CreatedAt DATETIME DEFAULT GETDATE(),
-    UpdatedAt DATETIME DEFAULT GETDATE()
+    UpdatedAt DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Profiles_AccountID FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE
 );
 
 -- =====================================
@@ -100,7 +110,7 @@ CREATE TABLE AuditLogs (
     Action NVARCHAR(100) NOT NULL,
     Timestamp DATETIME DEFAULT GETDATE(),
     Details NVARCHAR(1000),
-    FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE SET NULL
+    CONSTRAINT FK_AuditLogs_AccountID FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE SET NULL
 );
 
 -- =====================================
@@ -108,6 +118,23 @@ CREATE TABLE AuditLogs (
 -- =====================================
 
 
--- =====================================
--- STORED PROCEDURES
--- =====================================
+INSERT INTO Roles (RoleName, Description) VALUES
+('admin', N'Quyền quản trị viên'),
+('administrator', N'Quyền quản lý hệ thống'),
+('user', N'Quyền người dùng bình thường');
+
+INSERT INTO PermissionGroup (PermissionGroupName, Description) VALUES
+('MANAGER_USER', N'Quản lý người dùng')
+
+INSERT INTO Permissions (PermissionName, Description, PermissionGroupID) VALUES
+('CREATE_USER', N'Tạo người dùng mới', 1),
+('DELETE_USER', N'Xóa người dùng', 1),
+('UPDATE_USER', N'Cập nhật thông tin người dùng', 1),
+('VIEW_USER', N'Xem thông tin người dùng', 1);
+
+SELECT p.PermissionName, p.Description
+FROM Permissions p 
+LEFT JOIN PermissionGroup pg ON pg.PermissionGroupID = p.PermissionGroupID
+INNER JOIN AccountPermissions ap ON p.PermissionID = ap.PermissionID
+INNER JOIN Accounts a ON ap.AccountID = a.AccountID
+WHERE a.UserName = 'admin';

@@ -16,7 +16,7 @@ type Claims struct {
 }
 
 func GenerateAccessToken(UID string, UserName string) (string, error) {
-	return generate(UID, UserName, 15*time.Minute, AccessSecret)
+	return generate(UID, UserName, 60*time.Minute, AccessSecret)
 }
 
 func generate(UID string, UserName string, exp time.Duration, secret []byte) (string, error) {
