@@ -1,35 +1,43 @@
 ﻿CREATE OR ALTER PROCEDURE [dbo].[SP_LOGIN_ACCOUNT]
-    @username VARCHAR(50)
+    @UserName VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @account_id INT;
+    DECLARE @AccountID INT
+	DECLARE @Error INT
+	DECLARE @Message NVARCHAR(255)
+	DECLARE @UID VARCHAR(100)
+	DECLARE @Password VARCHAR(100)
+	DECLARE @ExpriedAt DATE
 
-    IF CHARINDEX('@', @username) > 0
-        SELECT @account_id = u.account_id FROM UserProfile u WHERE u.email = @username;
+    IF CHARINDEX('@', @UserName) > 0
+        SELECT @AccountID = u.AccountID FROM Profiles u WHERE u.Email = @UserName;
     ELSE
-        SELECT @account_id = a.id FROM Account a WHERE a.username = @username;
+        SELECT @AccountID = a.AccountID FROM Accounts a WHERE a.UserName = @UserName;
 
-    IF @account_id IS NULL
+    IF @AccountID IS NULL
     BEGIN
-        SELECT 0 AS status, N'Tên đăng nhập không tồn tại' AS message, NULL AS id, NULL AS username, NULL AS password, NULL AS expired_at;
+        SET @Error = -1;
+        SET @Message = N'Account does not exist.';
+        SELECT @Error AS Error, @Message AS Message, NULL AS id, NULL AS username, NULL AS password, NULL AS expired_at;
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM Account WHERE id = @account_id AND is_locked = 1)
+    IF EXISTS (SELECT 1 FROM Accounts WHERE AccountID = @AccountID AND IsActive = 0)
     BEGIN
-        SELECT 0 AS status, N'Tài khoản bị khóa' AS message, NULL AS id, NULL AS username, NULL AS password, NULL AS expired_at;
-        RETURN;
-    END
-
-    IF EXISTS (SELECT 1 FROM Account WHERE id = @account_id AND is_active = 0)
-    BEGIN
-        SELECT 0 AS status, N'Tài khoản chưa kích hoạt' AS message, NULL AS id, NULL AS username, NULL AS password, NULL AS expired_at;
+        SET @Error = -1;
+        SET @Message = N'Account is inactive.';
+        SELECT @Error AS Error, @Message AS Message, NULL AS id, NULL AS username, NULL AS password, NULL AS expired_at;
         RETURN;
     END
 	
-    SELECT 1 AS status, N'OK' AS message, id, username, password, expired_at
-    FROM Account WHERE id = @account_id;
+    SELECT @UID = UID, @Password = Password, @ExpriedAt = ExpiredAt
+    FROM Accounts
+    WHERE AccountID = @AccountID;
+
+    SET @Error = 0;
+    SET @Message = N'Login successful.';
+    SELECT @Error AS Error, @Message AS Message, @UID AS id, @UserName AS username, @Password AS password, @ExpriedAt AS expired_at;
 END
 -- EXEC SP_LOGIN_ACCOUNT @username = 'admi'

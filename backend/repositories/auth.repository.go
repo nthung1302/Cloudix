@@ -1,56 +1,42 @@
 package repositories
 
 import (
-	"backend/common"
 	"backend/configs"
+	"backend/utils"
+	"backend/models"
 	"database/sql"
 )
 
-func RegisterAccountRepo(username, password, fullName, email string) (*common.ProcResult, error) {
+func Register(Username, Password, FullName, Email string) (*models.RegisterResult, error) {
 	row := configs.DB.QueryRow(
-		`EXEC SP_CREATE_ACCOUNT @username=@u, @password=@p,	@full_name=@f, @email=@e`,
-		sql.Named("u", username),
-		sql.Named("p", password),
-		sql.Named("f", fullName),
-		sql.Named("e", email),
+		`EXEC SP_CREATE_ACCOUNT @UserName=@u, @Password=@p,	@FullName=@f, @Email=@e`,
+		sql.Named("u", Username),
+		sql.Named("p", Password),
+		sql.Named("f", FullName),
+		sql.Named("e", Email),
 	)
 
-	var res common.ProcResult
-	if err := row.Scan(&res.Status, &res.Message); err != nil {
+	var res models.RegisterResult
+	if err := row.Scan(&res.Error, &res.Message); err != nil {
+		utils.DebugLog("Error scanning register result", err.Error())
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-type LoginResult struct {
-	Status       int
-	Message      string
-	UserID       sql.NullInt64
-	Username     sql.NullString
-	PasswordHash sql.NullString
-	ExpiredAt    sql.NullTime
-}
-
-func LoginAccountRepo(login string) (*LoginResult, error) {
+func Login(UserName string) (*models.LoginResult, error) {
 	row := configs.DB.QueryRow(
-		`EXEC SP_LOGIN_ACCOUNT @username=@Username`,
-		sql.Named("Username", login),
+		`EXEC SP_LOGIN_ACCOUNT @UserName=@u`,
+		sql.Named("u", UserName),
 	)
 
-	var res LoginResult
-	err := row.Scan(
-	&res.Status,
-	&res.Message,
-	&res.UserID,
-	&res.Username,
-	&res.PasswordHash,
-	&res.ExpiredAt,
-	)
-
+	var res models.LoginResult
+	err := row.Scan( &res.Error, &res.Message, &res.UID, &res.UserName, &res.Password, &res.ExpiredAt,)
 
 	if err != nil {
-		return nil, err // system error
+		utils.DebugLog("Error scanning login result", err.Error())
+		return nil, err
 	}
 
 	return &res, nil

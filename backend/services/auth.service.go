@@ -7,58 +7,59 @@ import (
 	"time"
 )
 
-//========================================================================
+// ========================================================================
 //	Đăng ký tài khoản
-//========================================================================
-func Register(username, password, fullName, email string) error {
-	hash, err := utils.HashPassword(password)
+// ========================================================================
+func Register(UserName, Password, FullName, Email string) error {
+	PasswordHash, err := utils.HashPassword(Password)
 	if err != nil {
+		utils.DebugLog("Error hashing Password during registration", err.Error())
 		return err
 	}
 
-	result, err := repositories.RegisterAccountRepo(
-		username,
-		hash,
-		fullName,
-		email,
-	)
+	result, err := repositories.Register(UserName, PasswordHash, FullName, Email)
 	if err != nil {
+		utils.DebugLog("Error during registration", err.Error())
 		return err
 	}
 
-	if result.Status == 0 {
+	if result.Error != 0 {
+		utils.DebugLog("Registration error", result.Message)
 		return errors.New(result.Message)
 	}
 
 	return nil
 }
 
-//========================================================================
+// ========================================================================
 //	Đăng nhập tài khoản
-//========================================================================
-func Login(username, password string) (string, error) {
-	result, err := repositories.LoginAccountRepo(username)
+// ========================================================================
+func Login(UserName, Password string) (string, error) {
+	result, err := repositories.Login(UserName)
 	if err != nil {
+		utils.DebugLog("Error during login", err.Error())
 		return "", err
 	}
 
-	if result.Status == 0 {
+	if result.Error != 0 {
+		utils.DebugLog("Login error", result.Message)
 		return "", errors.New(result.Message)
 	}
 
-	if !utils.CheckPassword(result.PasswordHash.String, password) {
-		return "", errors.New("Mật khẩu không đúng")
+	if !utils.CheckPassword(result.Password.String, Password) {
+		return "", errors.New("Password is incorrect.")
 	}
 
 	if result.ExpiredAt.Valid && result.ExpiredAt.Time.Before(time.Now()) {
-		return "", errors.New("Tài khoản đã hết hạn")
+		return "", errors.New("Account has expired.")
 	}
 
 	token, err := utils.GenerateAccessToken(
-		int(result.UserID.Int64),
-		result.Username.String,
+		result.UID.String,
+		result.UserName.String,
 	)
 	if err != nil {
+		utils.DebugLog("Error generating access token", err.Error())
 		return "", err
 	}
 

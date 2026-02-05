@@ -1,47 +1,78 @@
 ﻿CREATE OR ALTER PROCEDURE SP_CREATE_ACCOUNT
-    @username   VARCHAR(20),
-    @password   VARCHAR(255),
-    @full_name  NVARCHAR(50),
-    @email      VARCHAR(50)
+    @UserName NVARCHAR(50),
+    @Password NVARCHAR(255),
+    @FullName NVARCHAR(100),
+    @Email NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
-	BEGIN TRY
-		IF EXISTS (SELECT 1 FROM Account WHERE username = @username)
-		BEGIN
-			SELECT 0 AS status, N'Username đã tồn tại' AS message;
-			RETURN;
-		END
 
-		-- Email tồn tại
-		IF EXISTS (SELECT 1 FROM UserProfile WHERE email = @email)
-		BEGIN
-			SELECT 0 AS status, N'Email đã tồn tại' AS message;
-			RETURN;
-		END
+    DECLARE @error INT;
+    DECLARE @message NVARCHAR(255);
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-		BEGIN TRANSACTION;
+        -- Kiểm tra trùng username và email
+        IF EXISTS (SELECT 1 FROM Accounts WHERE UserName = @UserName)
+        BEGIN
+            SET @error = -1;
+            SET @message = 'Username already exists.';
+            ROLLBACK TRANSACTION;
+            SELECT @error AS Error, @message AS Message;
+            RETURN;
+        END
 
-		INSERT INTO Account (username, [password], is_active, is_locked)
-		VALUES (@username, @password, 1, 0);
+        IF EXISTS (SELECT 1 FROM Profiles WHERE Email = @Email)
+        BEGIN
+            SET @error = -2;
+            SET @message = 'Email already exists.';
+            ROLLBACK TRANSACTION;
+            SELECT @error AS Error, @message AS Message;
+            RETURN;
+        END
 
-		DECLARE @account_id INT = SCOPE_IDENTITY();
+        -- Tạo tài khoản mới
+        INSERT INTO Accounts (UserName, Password)
+        VALUES (@UserName, @Password);
 
-		INSERT INTO UserProfile (email, full_name, account_id)
-		VALUES (@email, @full_name, @account_id);
+        -- Lấy AccountID vừa tạo
+        DECLARE @AccountID INT = SCOPE_IDENTITY();
 
-		INSERT INTO AccountPermission (permission_id, account_id)
-		SELECT id, @account_id FROM Permission WHERE is_default = 1;
+		-- Cập nhật ngày hết hạn 
+		UPDATE Accounts SET ExpiredAt = DATEADD(YEAR, 1, GETDATE()) 
+		WHERE AccountID = @AccountID;
 
-		COMMIT TRANSACTION;
+        -- Tạo profile cho tài khoản
+        INSERT INTO Profiles (AccountID, FullName, Email)
+        VALUES (@AccountID, @FullName, @Email);
 
-		SELECT 1 AS status, N'Đăng ký thành công' AS message;
-	END TRY
+        -- Gán vai trò và quyền mặc định
+        INSERT INTO AccountRoles (AccountID, RoleID)
+        SELECT @AccountID, RoleID
+        FROM Roles
+        WHERE IsDefault = 1;
+
+        -- Gán quyền mặc định từ vai trò
+        INSERT INTO AccountPermissions (AccountID, PermissionID)
+        SELECT @AccountID, rp.PermissionID
+        FROM RolePermissions rp
+        JOIN Roles r ON rp.RoleID = r.RoleID
+        WHERE r.IsDefault = 1;
+
+        COMMIT TRANSACTION;
+        SET @error = 0;
+        SET @message = 'Account created successfully.';
+        SELECT @error AS Error, @message AS Message;
+    END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
-        THROW;
+        SET @error = -99;
+        SET @message = ERROR_MESSAGE();
+        SELECT @error AS Error, @message AS Message;
     END CATCH
 END
--- EXEC SP_CREATE_ACCOUNT @username='admin2', @password='sdsd', @full_name='Nguyễn Văn B', @email='admin2@gmail.com'
+-- EXEC SP_CREATE_ACCOUNT @UserName='admin', @Password='admin@123', @FullName='Nguyễn Minh Hùng', @Email='admin@example.com'
+-- SELECT * FROM Accounts
