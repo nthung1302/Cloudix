@@ -17,14 +17,14 @@ func ChangePassword(UID, NewPassword string) (*models.ChangePasswordResult, erro
 	}
 
 	row := configs.DB.QueryRow(
-		`EXEC SP_CHANGE_PASSWORD @UID=@uid, @NewPassword=@newPassword`,
+		`EXEC SP_UPDATE_PASSWORD_BY_UID @UID=@uid, @NewPassword=@newPassword`,
 		sql.Named("uid", UID),
 		sql.Named("newPassword", passwordHash),
 	)
 
 	var res models.ChangePasswordResult
 	if err := row.Scan(&res.Status, &res.Message); err != nil {
-		utils.Logger.Error("Scan SP_CHANGE_PASSWORD lỗi: ", err)
+		utils.Logger.Error("Scan SP_UPDATE_PASSWORD_BY_UID lỗi: ", err)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 
@@ -33,28 +33,30 @@ func ChangePassword(UID, NewPassword string) (*models.ChangePasswordResult, erro
 	}
 
 	if res.Status < 0 {
-		utils.Logger.Error("SP_CHANGE_PASSWORD trả về status < 0: " + res.Message)
+		utils.Logger.Error("SP_UPDATE_PASSWORD_BY_UID trả về status < 0: " + res.Message)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 
 	return &res, nil
 }
 
+
+
 // Lấy thông tin tài khoản
 func GetAccountInfo(uid string) (map[string]interface{}, error) {
 	row := configs.DB.QueryRow(
-		`EXEC SP_GET_ACCOUNT_INFO @UID=@uid`,
+		`EXEC SP_GET_INFO_BY_UID @UID=@uid`,
 		sql.Named("uid", uid),
 	)
 
 	var res models.AccountProfileResult
 	if err := row.Scan(&res.Status, &res.Message, &res.UserName, &res.FullName, &res.Email, &res.CreatedAt); err != nil {
-		utils.Logger.Error("Scan SP_GET_ACCOUNT_INFO lỗi: ", err)
+		utils.Logger.Error("Scan SP_GET_INFO_BY_UID lỗi: ", err)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 
 	if res.Status < 0 {
-		utils.Logger.Error("SP_GET_ACCOUNT_INFO trả về status < 0: " + res.Message)
+		utils.Logger.Error("SP_GET_INFO_BY_UID trả về status < 0: " + res.Message)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 
@@ -70,14 +72,15 @@ func GetAccountInfo(uid string) (map[string]interface{}, error) {
 	}, nil
 }
 
+
 // Lấy quyền tài khoản
 func GetAccountPermissions(uid string) ([]models.PermissionRow, error) {
 	rows, err := configs.DB.Query(
-		`EXEC SP_GET_ACCOUNT_PERMISSION @UID=@u`,
+		`EXEC SP_GET_PERMISSION_BY_UID @UID=@u`,
 		sql.Named("u", uid),
 	)
 	if err != nil {
-		utils.Logger.Error("Query SP_GET_ACCOUNT_PERMISSION lỗi: ", err)
+		utils.Logger.Error("Query SP_GET_PERMISSION_BY_UID lỗi: ", err)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 	defer rows.Close()
@@ -86,7 +89,7 @@ func GetAccountPermissions(uid string) ([]models.PermissionRow, error) {
 	for rows.Next() {
 		var r models.PermissionRow
 		if err := rows.Scan(&r.GroupName, &r.PermissionName); err != nil {
-			utils.Logger.Error("Scan SP_GET_ACCOUNT_PERMISSION lỗi: ", err)
+			utils.Logger.Error("Scan SP_GET_PERMISSION_BY_UID lỗi: ", err)
 			return nil, errors.New("Lỗi hệ thống.")
 		}
 		result = append(result, r)

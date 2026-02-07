@@ -85,19 +85,19 @@ func ForgotPassword(Username, NewPassword string) (*models.ForgotPasswordResult,
 	}
 
 	row := configs.DB.QueryRow(
-		`EXEC SP_FORGOT_PASSWORD @UserName=@userName, @NewPassword=@newPassword`,
+		`EXEC SP_UPDATE_PASSWORD_BY_USERNAME @UserName=@userName, @NewPassword=@newPassword`,
 		sql.Named("userName", Username),
 		sql.Named("newPassword", hash),
 	)
 
 	var res models.ForgotPasswordResult
 	if err := row.Scan(&res.Status, &res.Message); err != nil {
-		utils.Logger.Error("Scan SP_FORGOT_PASSWORD lỗi: ", err)
+		utils.Logger.Error("Scan SP_UPDATE_PASSWORD_BY_USERNAME lỗi: ", err)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 
 	if res.Status < 0 {
-		utils.Logger.Error("SP_FORGOT_PASSWORD trả về status < 0: " + res.Message)
+		utils.Logger.Error("SP_UPDATE_PASSWORD_BY_USERNAME trả về status < 0: " + res.Message)
 		return nil, errors.New("Lỗi hệ thống.")
 	}
 
