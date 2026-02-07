@@ -14,31 +14,31 @@ func Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.Logger.Error("Lỗi khi nhận dữ liệu đăng ký: ", err)
-		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
+		utils.Response(c, 400, "Dữ liệu không hợp lệ.", nil)
 		return
 	}
 
 	result, err := services.Register(req.UserName, req.Password, req.FullName, req.Email)
 	if err != nil {
-		utils.Response(c, 400, 0, err.Error(), nil)
+		utils.Response(c, 400, err.Error(), nil)
 		return
 	}
 
-	utils.Response(c, 200, 1, result.Message, nil)
+	utils.Response(c, 200, result.Message, nil)
 }
 
 // Login handles the login request.
 func Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
+		utils.Response(c, 400, "Dữ liệu không hợp lệ.", nil)
 		return
 	}
 
 	user, err := services.Login(req.UserName, req.Password)
 	if err != nil {
 		utils.Logger.Error(err)
-		utils.Response(c, 400, 0, err.Error(), nil)
+		utils.Response(c, 400, err.Error(), nil)
 		return
 	}
 
@@ -48,11 +48,11 @@ func Login(c *gin.Context) {
 	)
 	if err != nil {
 		utils.Logger.Error(err)
-		utils.Response(c, 500, -99, "Lỗi hệ thống.", nil)
+		utils.Response(c, 500, "Lỗi hệ thống.", nil)
 		return
 	}
 
-	utils.Response(c, 200, 0, "Đăng nhập thành công.", gin.H{
+	utils.Response(c, 200, "Đăng nhập thành công.", gin.H{
 		"access_token": token,
 	})
 }
@@ -62,16 +62,16 @@ func ForgotPassword(c *gin.Context) {
 	var req models.ForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.Logger.Error("Lỗi khi nhận dữ liệu quên mật khẩu: ", err)
-		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
+		utils.Response(c, 400, "Dữ liệu không hợp lệ.", nil)
 		return
 	}
 
 	result, err := services.ForgotPassword(req.UserName, req.NewPassword)
 	if err != nil {
 		utils.Logger.Error("Lỗi khi xử lý quên mật khẩu: ", err)
-		utils.Response(c, 400, 0, err.Error(), nil)
+		utils.Response(c, 400, err.Error(), nil)
 		return
 	}
 
-	utils.Response(c, 200, 1, result.Message, nil)
+	utils.Response(c, 200, result.Message, nil)
 }

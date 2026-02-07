@@ -12,25 +12,25 @@ func ChangePassword(c *gin.Context) {
 	UID := c.GetString("UID")
 	if UID == "" {
 		utils.Logger.Error("Không tìm thấy UID trong context.")
-		utils.Response(c, 401, 0, "Unauthorized.", nil)
+		utils.Response(c, 401, "Unauthorized.", nil)
 		return
 	}
 
 	var req models.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.Logger.Error("Bind JSON lỗi: ", err)
-		utils.Response(c, 400, 0, "Dữ liệu không hợp lệ.", nil)
+		utils.Response(c, 400, "Dữ liệu không hợp lệ.", nil)
 		return
 	}
 
 	result, err := services.ChangePassword(UID, req.NewPassword)
 	if err != nil {
 		utils.Logger.Error("Đổi mật khẩu lỗi: ", err)
-		utils.Response(c, 400, 0, err.Error(), nil)
+		utils.Response(c, 400, err.Error(), nil)
 		return
 	}
 
-	utils.Response(c, 200, result.Status, result.Message, nil)
+	utils.Response(c, 200, result.Message, nil)
 }
 
 // GetAccountInfo retrieves the account information for an authenticated user.
@@ -38,7 +38,7 @@ func GetAccountInfo(c *gin.Context) {
 	uidVal, ok := c.Get("UID")
 	if !ok {
 		utils.Logger.Error("Không tìm thấy UID trong context.")
-		utils.Response(c, 401, 0, "Unauthorized.", nil)
+		utils.Response(c, 401, "Unauthorized.", nil)
 		return
 	}
 	UID := uidVal.(string)
@@ -47,7 +47,7 @@ func GetAccountInfo(c *gin.Context) {
 	profile, err := services.GetAccountInfo(UID)
 	if err != nil {
 		utils.Logger.Error(err)
-		utils.Response(c, 400, 0, err.Error(), nil)
+		utils.Response(c, 400, err.Error(), nil)
 		return
 	}
 
@@ -55,7 +55,7 @@ func GetAccountInfo(c *gin.Context) {
 	rawPermissions, err := services.GetAccountPermissions(UID)
 	if err != nil {
 		utils.Logger.Error(err)
-		utils.Response(c, 400, 0, err.Error(), nil)
+		utils.Response(c, 400, err.Error(), nil)
 		return
 	}
 
@@ -79,7 +79,7 @@ func GetAccountInfo(c *gin.Context) {
 		})
 	}
 
-	utils.Response(c, 200, 0, "Lấy thông tin tài khoản thành công.", gin.H{
+	utils.Response(c, 200, "Lấy thông tin tài khoản thành công.", gin.H{
 		"profile":     profile,
 		"permissions": permissionGroups,
 	})

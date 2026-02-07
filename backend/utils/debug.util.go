@@ -6,9 +6,8 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func Response(c *gin.Context, status int, code int, message string, data any) {
+func Response(c *gin.Context, status int, message string, data any) {
 	resp := gin.H{
-		"status":  code,
 		"message": message,
 		"data":    data,
 	}
